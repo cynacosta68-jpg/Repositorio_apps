@@ -13,6 +13,7 @@ st.set_page_config(
 
 # ─────────────────────────────────────────────
 # CATÁLOGO DE APPS (editá acá para agregar/quitar)
+# Los nombres deben coincidir con los de [permisos_roles]
 # ─────────────────────────────────────────────
 APPS = [
     {
@@ -223,18 +224,41 @@ def check_password():
 
 
 # ─────────────────────────────────────────────
+# FILTRO DE APPS POR ROL
+# ─────────────────────────────────────────────
+def obtener_apps_permitidas(usuario):
+    """Retorna la lista de apps que el usuario puede ver según su rol."""
+    roles = st.secrets.get("roles", {})
+    permisos = st.secrets.get("permisos_roles", {})
+
+    rol = roles.get(usuario, "")
+    apps_permitidas = permisos.get(rol, [])
+
+    # Si el rol tiene "*", ve todas las apps
+    if "*" in apps_permitidas:
+        return APPS
+
+    # Filtrar solo las apps que tiene permitidas
+    return [app for app in APPS if app["nombre"] in apps_permitidas]
+
+
+# ─────────────────────────────────────────────
 # PANTALLA PRINCIPAL DEL HUB
 # ─────────────────────────────────────────────
 def mostrar_hub():
     usuario = st.session_state.get("usuario", "")
     nombres = st.secrets.get("nombres", {})
     nombre_completo = nombres.get(usuario, usuario)
+    roles = st.secrets.get("roles", {})
+    rol = roles.get(usuario, "")
+    es_admin = rol == "admin"
 
     # Barra superior
     col_user, col_logout = st.columns([5, 1])
     with col_user:
+        rol_badge = " · 🛡️ Admin" if es_admin else ""
         st.markdown(
-            f'<div class="topbar">👤 <b>{nombre_completo}</b> &nbsp;·&nbsp; Sesión activa</div>',
+            f'<div class="topbar">👤 <b>{nombre_completo}</b>{rol_badge} &nbsp;·&nbsp; Sesión activa</div>',
             unsafe_allow_html=True,
         )
     with col_logout:
@@ -251,11 +275,20 @@ def mostrar_hub():
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Filtro por categoría ──
-    categorias = sorted(set(app["categoria"] for app in APPS))
-    filtro = st.pills("Categoría", ["Todas"] + categorias, default="Todas")
+    # ── Obtener apps según rol ──
+    apps_del_usuario = obtener_apps_permitidas(usuario)
 
-    apps_filtradas = APPS if filtro == "Todas" else [a for a in APPS if a["categoria"] == filtro]
+    if not apps_del_usuario:
+        st.warning("No tenés apps asignadas. Contactá al administrador.")
+        return
+
+    # ── Filtro por categoría ──
+    categorias = sorted(set(app["categoria"] for app in apps_del_usuario))
+    if len(categorias) > 1:
+        filtro = st.pills("Categoría", ["Todas"] + categorias, default="Todas")
+        apps_filtradas = apps_del_usuario if filtro == "Todas" else [a for a in apps_del_usuario if a["categoria"] == filtro]
+    else:
+        apps_filtradas = apps_del_usuario
 
     # ── Agrupar por categoría ──
     cats = {}
@@ -281,7 +314,8 @@ def mostrar_hub():
 
     # Footer
     st.markdown("---")
-    st.caption("🔐 Acceso protegido · Las apps individuales requieren autenticación propia")
+    total = len(apps_del_usuario)
+    st.caption(f"🔐 Acceso protegido · {total} app{'s' if total != 1 else ''} disponible{'s' if total != 1 else ''} para tu perfil")
 
 
 # ─────────────────────────────────────────────
