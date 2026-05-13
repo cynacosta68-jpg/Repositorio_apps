@@ -227,12 +227,14 @@ def check_password():
 # ─────────────────────────────────────────────
 def mostrar_hub():
     usuario = st.session_state.get("usuario", "")
+    nombres = st.secrets.get("nombres", {})
+    nombre_completo = nombres.get(usuario, usuario)
 
     # Barra superior
     col_user, col_logout = st.columns([5, 1])
     with col_user:
         st.markdown(
-            f'<div class="topbar">👤 <b>{usuario}</b> &nbsp;·&nbsp; Sesión activa</div>',
+            f'<div class="topbar">👤 <b>{nombre_completo}</b> &nbsp;·&nbsp; Sesión activa</div>',
             unsafe_allow_html=True,
         )
     with col_logout:
