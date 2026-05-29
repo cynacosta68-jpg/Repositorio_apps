@@ -6,14 +6,13 @@ import hmac
 # ─────────────────────────────────────────────
 st.set_page_config(
     page_title="Hub de Aplicaciones",
-    page_icon="🔐",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
 # ─────────────────────────────────────────────
-# CATÁLOGO DE APPS (editá acá para agregar/quitar)
-# Los nombres deben coincidir con los de [permisos_roles]
+# CATÁLOGO DE APPS
 # ─────────────────────────────────────────────
 APPS = [
     {
@@ -64,6 +63,30 @@ APPS = [
         "icono": "📊",
         "url": "https://valoriacionsmg-gzpmhpc8jyxpzmbtlu6hkh.streamlit.app/",
     },
+    {
+        "nombre": "Foliador de Obras Sociales",
+        "descripcion": "Extrae códigos de cuenta de PDFs escaneados y cruza con base de profesionales",
+        "categoria": "Facturación",
+        "subcategoria": "Obras Sociales",
+        "icono": "📑",
+        "url": "https://foliadorobras-sociales-vvbbdgu49m7ukd3eow5ep4.streamlit.app/",
+    },
+    {
+        "nombre": "Procesador Galeno",
+        "descripcion": "Procesamiento de prestaciones Galeno",
+        "categoria": "Facturación",
+        "subcategoria": "Galeno",
+        "icono": "🏥",
+        "url": "https://conexia-seros-backend-production.up.railway.app/",
+    },
+    {
+        "nombre": "Conexia SEROS",
+        "descripcion": "Plataforma de gestión Conexia para SEROS",
+        "categoria": "Facturación",
+        "subcategoria": "SEROS",
+        "icono": "🔗",
+        "url": "https://conexia-seros-frontend.vercel.app/",
+    },
 ]
 
 # ─────────────────────────────────────────────
@@ -71,110 +94,271 @@ APPS = [
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
-    /* Ocultar elementos de Streamlit */
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+
+    html, body, [class*="css"] { font-family: 'DM Sans', sans-serif !important; }
+
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* Contenedor de login */
-    .login-box {
-        max-width: 420px;
-        margin: 4vh auto 1vh;
-        padding: 2rem 2rem 0.5rem;
-        border: 1px solid rgba(128,128,128,0.2);
-        border-radius: 16px;
-        background: rgba(128,128,128,0.03);
-    }
-    .login-box h2 {
-        text-align: center;
-        margin-bottom: 0.3rem;
-        font-size: 1.6rem;
-    }
-    .login-box p {
-        text-align: center;
-        color: gray;
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
+    .stApp {
+        background: linear-gradient(160deg, #060e1a 0%, #0a1628 40%, #0f1f3d 100%);
     }
 
-    /* Tarjetas de apps */
-    .app-card {
-        border: 1px solid rgba(128,128,128,0.2);
-        border-radius: 12px;
-        padding: 1.3rem;
-        min-height: 160px;
-        transition: all 0.2s ease;
-        background: rgba(128,128,128,0.03);
-        cursor: pointer;
+    /* ── Login ── */
+    .login-container {
+        max-width: 380px;
+        margin: 8vh auto 0;
+        text-align: center;
     }
-    .app-card:hover {
-        border-color: rgba(59,130,246,0.5);
-        box-shadow: 0 4px 12px rgba(59,130,246,0.1);
-        transform: translateY(-2px);
-    }
-    .app-card .icono {
-        font-size: 2rem;
+    .login-logo {
+        font-size: 2.2rem;
         margin-bottom: 0.5rem;
     }
-    .app-card .nombre {
+    .login-title {
+        font-family: 'DM Sans', sans-serif !important;
         font-weight: 600;
-        font-size: 1.05rem;
-        margin-bottom: 0.3rem;
+        font-size: 1.5rem;
+        color: #e2e8f0;
+        margin-bottom: 0.25rem;
     }
-    .app-card .desc {
-        color: gray;
+    .login-sub {
+        font-family: 'DM Sans', sans-serif !important;
+        font-weight: 300;
         font-size: 0.85rem;
-        margin-bottom: 0.6rem;
+        color: #64748b;
+        margin-bottom: 1.5rem;
     }
-    .app-card .badge {
-        display: inline-block;
-        background: rgba(59,130,246,0.1);
-        color: rgba(59,130,246,0.9);
-        padding: 0.15rem 0.6rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 500;
-    }
-
-    /* Header del hub */
-    .hub-header {
-        text-align: center;
-        padding: 1rem 0 0.5rem;
-    }
-    .hub-header h1 {
-        font-size: 1.8rem;
-        margin-bottom: 0.3rem;
-    }
-    .hub-header p {
-        color: gray;
-        font-size: 0.95rem;
+    .login-card {
+        background: rgba(17, 29, 51, 0.6);
+        border: 1px solid rgba(59, 130, 246, 0.08);
+        border-radius: 12px;
+        padding: 1.75rem;
+        backdrop-filter: blur(8px);
     }
 
-    /* Barra superior con usuario */
+    /* ── Inputs ── */
+    [data-testid="stTextInput"] input {
+        font-family: 'DM Sans', sans-serif !important;
+        background: rgba(15, 23, 42, 0.6) !important;
+        border: 1px solid rgba(59, 130, 246, 0.15) !important;
+        border-radius: 8px !important;
+        color: #e2e8f0 !important;
+        font-size: 0.9rem !important;
+    }
+    [data-testid="stTextInput"] input:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+    }
+    [data-testid="stTextInput"] label {
+        font-family: 'DM Sans', sans-serif !important;
+        color: #94a3b8 !important;
+        font-size: 0.8rem !important;
+        font-weight: 400 !important;
+    }
+
+    /* ── Buttons ── */
+    .stButton > button, button[kind="primary"] {
+        font-family: 'DM Sans', sans-serif !important;
+        font-weight: 500 !important;
+        background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 0.55rem 1.5rem !important;
+        letter-spacing: 0.3px;
+        transition: all 0.2s ease;
+        font-size: 0.85rem !important;
+    }
+    .stButton > button:hover, button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.25) !important;
+    }
+
+    /* ── Topbar ── */
     .topbar {
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
         align-items: center;
-        padding: 0.5rem 0;
-        margin-bottom: 0.5rem;
-        border-bottom: 1px solid rgba(128,128,128,0.15);
-        font-size: 0.85rem;
-        color: gray;
+        padding: 0.75rem 0;
+        margin-bottom: 0.25rem;
+        border-bottom: 1px solid rgba(59, 130, 246, 0.06);
+    }
+    .topbar-user {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.8rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .topbar-user b { color: #94a3b8; font-weight: 500; }
+    .admin-badge {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+        font-size: 0.65rem;
+        font-weight: 500;
+        padding: 0.15rem 0.5rem;
+        border-radius: 20px;
+        letter-spacing: 0.5px;
     }
 
-    /* Categoría */
-    .cat-title {
-        font-size: 1.1rem;
+    /* ── Header ── */
+    .hub-header {
+        text-align: center;
+        padding: 2rem 0 0.5rem;
+    }
+    .hub-header h1 {
+        font-family: 'DM Sans', sans-serif !important;
         font-weight: 600;
-        margin: 1.5rem 0 0.8rem;
-        border-left: 3px solid rgba(59,130,246,0.7);
-        padding-left: 0.6rem;
+        font-size: 1.8rem;
+        color: #e2e8f0;
+        letter-spacing: -0.5px;
+        margin-bottom: 0.25rem;
+    }
+    .accent-line {
+        width: 40px;
+        height: 2px;
+        background: #3b82f6;
+        margin: 0.6rem auto;
+        border-radius: 2px;
+    }
+    .hub-header p {
+        font-family: 'DM Sans', sans-serif !important;
+        font-weight: 300;
+        font-size: 0.9rem;
+        color: #64748b;
     }
 
-    /* Link sin decoración */
+    /* ── Stats ── */
+    .stats-row {
+        display: flex;
+        gap: 0.75rem;
+        margin: 1rem 0 1.5rem;
+        justify-content: center;
+    }
+    .stat-pill {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(59, 130, 246, 0.08);
+        border-radius: 8px;
+        padding: 0.6rem 1.25rem;
+        text-align: center;
+    }
+    .stat-pill .num {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #60a5fa;
+        line-height: 1;
+    }
+    .stat-pill .lbl {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.65rem;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-top: 0.2rem;
+    }
+
+    /* ── Category ── */
+    .cat-title {
+        font-family: 'DM Sans', sans-serif !important;
+        font-weight: 500;
+        font-size: 0.75rem;
+        color: #60a5fa;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin: 1.5rem 0 0.75rem;
+        padding-left: 0.1rem;
+    }
+
+    /* ── App Cards ── */
     a.app-link {
         text-decoration: none !important;
         color: inherit !important;
+        display: block;
+    }
+    .app-card {
+        background: rgba(17, 29, 51, 0.5);
+        border: 1px solid rgba(59, 130, 246, 0.06);
+        border-radius: 10px;
+        padding: 1.2rem;
+        min-height: 140px;
+        transition: all 0.25s ease;
+        cursor: pointer;
+        margin-bottom: 0.75rem;
+    }
+    .app-card:hover {
+        border-color: rgba(59, 130, 246, 0.25);
+        background: rgba(17, 29, 51, 0.7);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(6, 14, 26, 0.4);
+    }
+    .app-card .icono {
+        font-size: 1.5rem;
+        margin-bottom: 0.6rem;
+    }
+    .app-card .nombre {
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 500;
+        font-size: 0.95rem;
+        color: #e2e8f0;
+        margin-bottom: 0.3rem;
+        letter-spacing: -0.2px;
+    }
+    .app-card .desc {
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 300;
+        color: #64748b;
+        font-size: 0.78rem;
+        margin-bottom: 0.7rem;
+        line-height: 1.4;
+    }
+    .app-card .badge {
+        display: inline-block;
+        background: rgba(59, 130, 246, 0.08);
+        color: #60a5fa;
+        padding: 0.15rem 0.6rem;
+        border-radius: 20px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.65rem;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+    }
+    .app-card .arrow {
+        float: right;
+        color: rgba(59, 130, 246, 0.2);
+        font-size: 1rem;
+        margin-top: -1.8rem;
+        transition: color 0.2s;
+    }
+    .app-card:hover .arrow {
+        color: rgba(59, 130, 246, 0.6);
+    }
+
+    /* ── Pills filter ── */
+    [data-testid="stPills"] button {
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 0.78rem !important;
+        border-radius: 20px !important;
+    }
+
+    /* ── Alert ── */
+    .stAlert { border-radius: 10px !important; }
+
+    /* ── Footer ── */
+    .hub-footer {
+        text-align: center;
+        padding: 2rem 0 1rem;
+        border-top: 1px solid rgba(59, 130, 246, 0.04);
+        margin-top: 2rem;
+    }
+    .hub-footer p {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.7rem;
+        color: #334155;
+        letter-spacing: 0.5px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -184,13 +368,10 @@ st.markdown("""
 # AUTENTICACIÓN
 # ─────────────────────────────────────────────
 def check_password():
-    """Verifica credenciales contra st.secrets. Retorna True si ok."""
-
     def login_clicked():
         username = st.session_state.get("login_user", "")
         password = st.session_state.get("login_pass", "")
         users = st.secrets.get("usuarios", {})
-
         if username in users and hmac.compare_digest(password, users[username]):
             st.session_state["autenticado"] = True
             st.session_state["usuario"] = username
@@ -199,26 +380,26 @@ def check_password():
             st.session_state["autenticado"] = False
             st.session_state["login_error"] = True
 
-    # Ya autenticado → pasar
     if st.session_state.get("autenticado", False):
         return True
 
-    # Formulario de login
     st.markdown("""
-    <div class="login-box">
-        <h2>🔐 Hub de Apps</h2>
-        <p>Ingresá tus credenciales para continuar</p>
+    <div class="login-container">
+        <div class="login-logo">⚡</div>
+        <div class="login-title">Hub de aplicaciones</div>
+        <div class="login-sub">Ingresá tus credenciales para continuar</div>
     </div>
     """, unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([1, 1.2, 1])
+    col1, col2, col3 = st.columns([1.2, 1, 1.2])
     with col2:
+        st.markdown('<div class="login-card">', unsafe_allow_html=True)
         st.text_input("Usuario", key="login_user")
         st.text_input("Contraseña", type="password", key="login_pass")
         st.button("Ingresar", on_click=login_clicked, use_container_width=True, type="primary")
-
         if st.session_state.get("login_error", False):
-            st.error("❌ Usuario o contraseña incorrectos")
+            st.error("Usuario o contraseña incorrectos")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     return False
 
@@ -227,23 +408,17 @@ def check_password():
 # FILTRO DE APPS POR ROL
 # ─────────────────────────────────────────────
 def obtener_apps_permitidas(usuario):
-    """Retorna la lista de apps que el usuario puede ver según su rol."""
     roles = st.secrets.get("roles", {})
     permisos = st.secrets.get("permisos_roles", {})
-
     rol = roles.get(usuario, "")
     apps_permitidas = permisos.get(rol, [])
-
-    # Si el rol tiene "*", ve todas las apps
     if "*" in apps_permitidas:
         return APPS
-
-    # Filtrar solo las apps que tiene permitidas
     return [app for app in APPS if app["nombre"] in apps_permitidas]
 
 
 # ─────────────────────────────────────────────
-# PANTALLA PRINCIPAL DEL HUB
+# PANTALLA PRINCIPAL
 # ─────────────────────────────────────────────
 def mostrar_hub():
     usuario = st.session_state.get("usuario", "")
@@ -253,16 +428,16 @@ def mostrar_hub():
     rol = roles.get(usuario, "")
     es_admin = rol == "admin"
 
-    # Barra superior
+    # Topbar
     col_user, col_logout = st.columns([5, 1])
     with col_user:
-        rol_badge = " · 🛡️ Admin" if es_admin else ""
+        admin_html = ' <span class="admin-badge">admin</span>' if es_admin else ''
         st.markdown(
-            f'<div class="topbar">👤 <b>{nombre_completo}</b>{rol_badge} &nbsp;·&nbsp; Sesión activa</div>',
+            f'<div class="topbar"><div class="topbar-user">👤 <b>{nombre_completo}</b>{admin_html}</div></div>',
             unsafe_allow_html=True,
         )
     with col_logout:
-        if st.button("🚪 Cerrar sesión", use_container_width=True):
+        if st.button("Cerrar sesión", use_container_width=True):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.rerun()
@@ -270,27 +445,36 @@ def mostrar_hub():
     # Header
     st.markdown("""
     <div class="hub-header">
-        <h1>📂 Hub de Aplicaciones</h1>
+        <h1>Hub de aplicaciones</h1>
+        <div class="accent-line"></div>
         <p>Seleccioná una aplicación para comenzar</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Obtener apps según rol ──
+    # Apps del usuario
     apps_del_usuario = obtener_apps_permitidas(usuario)
 
     if not apps_del_usuario:
         st.warning("No tenés apps asignadas. Contactá al administrador.")
         return
 
-    # ── Filtro por categoría ──
+    # Stats
     categorias = sorted(set(app["categoria"] for app in apps_del_usuario))
+    st.markdown(f"""
+    <div class="stats-row">
+        <div class="stat-pill"><div class="num">{len(apps_del_usuario)}</div><div class="lbl">Apps</div></div>
+        <div class="stat-pill"><div class="num">{len(categorias)}</div><div class="lbl">Categorías</div></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Filtro por categoría
     if len(categorias) > 1:
-        filtro = st.pills("Categoría", ["Todas"] + categorias, default="Todas")
+        filtro = st.pills("Filtrar", ["Todas"] + categorias, default="Todas", label_visibility="collapsed")
         apps_filtradas = apps_del_usuario if filtro == "Todas" else [a for a in apps_del_usuario if a["categoria"] == filtro]
     else:
         apps_filtradas = apps_del_usuario
 
-    # ── Agrupar por categoría ──
+    # Agrupar por categoría
     cats = {}
     for app in apps_filtradas:
         cats.setdefault(app["categoria"], []).append(app)
@@ -308,14 +492,17 @@ def mostrar_hub():
                         <div class="nombre">{app['nombre']}</div>
                         <div class="desc">{app['descripcion']}</div>
                         <span class="badge">{app['subcategoria']}</span>
+                        <span class="arrow">→</span>
                     </div>
                 </a>
                 """, unsafe_allow_html=True)
 
     # Footer
-    st.markdown("---")
-    total = len(apps_del_usuario)
-    st.caption(f"🔐 Acceso protegido · {total} app{'s' if total != 1 else ''} disponible{'s' if total != 1 else ''} para tu perfil")
+    st.markdown(f"""
+    <div class="hub-footer">
+        <p>HUB DE APLICACIONES · {len(apps_del_usuario)} apps disponibles · Acceso protegido</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────
