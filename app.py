@@ -77,7 +77,7 @@ APPS = [
         "categoria": "Facturación",
         "subcategoria": "Galeno",
         "icono": "🏥",
-        "url": "https://conexia-seros-backend-production.up.railway.app/",
+        "url": "https://procesargaleno-production.up.railway.app/",
     },
     {
         "nombre": "Conexia SEROS",
