@@ -87,6 +87,15 @@ APPS = [
         "icono": "🔗",
         "url": "https://conexia-seros-frontend.vercel.app/",
     },
+    {
+        "nombre": "Control de Facturación",
+        "descripcion": "Control y seguimiento de facturación emitida por profesional. Gestión de comprobantes ARCA con estado por obra social y período.",
+        "categoria": "Facturación",
+        "subcategoria": "Control",
+        "icono": "◆",
+        "url": "https://controlfacturacion-production.up.railway.app",
+    },
+
 ]
 
 # ─────────────────────────────────────────────
